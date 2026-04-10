@@ -2,13 +2,12 @@
 sudo apt update -y
 sudo apt install python3-pip python3-venv git mysql-client -y
 
-cd CC_prj/CC_prj
 python3 -m venv venv
 source venv/bin/activate
 
 pip install -r requirements.txt
 
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS workforce_db; USE workforce_db;
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS workforce_db; USE workforce_db;
 
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
