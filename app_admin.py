@@ -83,7 +83,15 @@ def login():
         cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
         user = cursor.fetchone()
 
-        if user and check_password_hash(user[3], password):
+        pass_matched = False
+        if user and user[3]:
+            try:
+                pass_matched = check_password_hash(user[3], password)
+            except ValueError:
+                # Support old plaintext passwords natively
+                pass_matched = (user[3] == password)
+
+        if pass_matched:
             session['user_id'] = user[0]
             flash('Login successful', 'success')
             return redirect(url_for('index'))

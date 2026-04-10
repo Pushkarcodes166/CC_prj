@@ -49,7 +49,15 @@ def login():
         cursor.execute("SELECT * FROM employees WHERE email=%s", (email,))
         user = cursor.fetchone()
 
-        if user and check_password_hash(user['password'], password):
+        pass_matched = False
+        if user and user.get('password'):
+            try:
+                pass_matched = check_password_hash(user['password'], password)
+            except ValueError:
+                # Support old plaintext passwords natively
+                pass_matched = (user['password'] == password)
+
+        if pass_matched:
             session['user_id'] = user['id']
             session['user_name'] = user['name']
             flash('Login successful', 'success')
