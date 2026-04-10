@@ -107,9 +107,11 @@
 <body>
     <h1>Leave Management</h1>
     
-    <form action="{{ url_for('leave') }}" method="post">
+    <form action="{{ url_for('leave') }}" method="post" enctype="multipart/form-data">
         <h2>Apply for Leave</h2>
         <input type="text" name="reason" placeholder="Reason for leave" required>
+        <label for="file">Attach Doctor's Note (Optional):</label>
+        <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg">
         <button type="submit">Submit Leave Request</button>
     </form>
 
@@ -121,6 +123,7 @@
                 <th>Employee Name</th>
                 <th>Reason</th>
                 <th>Status</th>
+                <th>Document</th>
             </tr>
         </thead>
         <tbody>
@@ -130,6 +133,13 @@
                 <td>{{ leave['name'] }}</td>
                 <td>{{ leave['reason'] }}</td>
                 <td>{{ leave['status'] }}</td>
+                <td>
+                    {% if leave['document_url'] %}
+                        <a href="{{ leave['document_url'] }}" target="_blank">View Docs</a>
+                    {% else %}
+                        No File
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

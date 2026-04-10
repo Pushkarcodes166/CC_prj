@@ -150,8 +150,29 @@ def employees():
                 (name, position, email, password)
             )
             conn.commit()
-            flash('Employee added successfully', 'success')
+            
+            # --- AWS SES Integration ---
+            try:
+                raw_password = request.form['password']
+                ses_client = boto3.client('ses', region_name='us-east-1')
+                sender = "shravaninandvikar1508@gmail.com"
+                
+                ses_client.send_email(
+                    Source=sender,
+                    Destination={'ToAddresses': [email]},
+                    Message={
+                        'Subject': {'Data': 'Welcome to the Workforce Management System!'},
+                        'Body': {'Text': {'Data': f"Hello {name},\n\nYour Employee portal account is ready!\nLogin at port 8000.\n\nEmail: {email}\nPassword: {raw_password}\n\nDo not share this password with anyone."}}
+                    }
+                )
+                flash('Employee added and Welcome Email sent via SES!', 'success')
+            except Exception as ses_e:
+                # If SES fails (e.g. sending to unverified recipient in sandbox mode)
+                print(str(ses_e))
+                flash('Employee added, but AWS SES Email blocked (Sandbox Mode Restriction?)', 'warning')
+                
         except Exception as e:
+            flash(f'Error adding employee: possibly duplicate email.', 'error')
             flash(f'Error adding employee: possibly duplicate email.', 'error')
 
     cursor.execute("SELECT * FROM employees")
@@ -315,7 +336,7 @@ def leave():
         conn.commit()
 
     cursor.execute("""
-        SELECT leaves.id, employees.name AS name, leaves.reason, leaves.status 
+        SELECT leaves.id, employees.name AS name, leaves.reason, leaves.status, leaves.document_url 
         FROM leaves 
         JOIN employees ON leaves.employee_id = employees.id
     """)

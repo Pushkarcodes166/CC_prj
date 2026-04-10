@@ -53,7 +53,10 @@ CREATE TABLE IF NOT EXISTS leaves (
     reason TEXT NOT NULL,
     status VARCHAR(255) DEFAULT 'Pending',
     FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE CASCADE
-);"
+);
+
+-- Safely attempt to add the document_url column if reusing an old database
+ALTER TABLE leaves ADD COLUMN document_url VARCHAR(500);"
 
 echo "Database schemas updated."
 

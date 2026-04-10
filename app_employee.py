@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import mysql.connector
 import os
+import boto3
 
 # ================= CONFIG =================
 app = Flask(__name__, template_folder='templates_employee')
@@ -157,15 +158,29 @@ def leave():
 
     if request.method == 'POST':
         reason = request.form['reason']
+        file_url = None
+        
+        file = request.files.get('file')
+        if file and file.filename != '':
+            try:
+                s3 = boto3.client('s3', region_name='us-east-1')
+                bucket_name = "wfms-assets-12345"
+                file_key = f"leaves/{session['user_id']}_{file.filename.replace(' ', '_')}"
+                # Removed ACL='public-read' to prevent Block Public Access crash. Instead presigned URL or direct link relying on bucket policy.
+                s3.upload_fileobj(file, bucket_name, file_key)
+                file_url = f"https://{bucket_name}.s3.amazonaws.com/{file_key}"
+            except Exception as e:
+                print("S3 Upload Failed:", str(e))
+                pass
 
         cursor.execute(
-            "INSERT INTO leaves (employee_id, reason, status) VALUES (%s,%s,%s)",
-            (session['user_id'], reason, "Pending")
+            "INSERT INTO leaves (employee_id, reason, status, document_url) VALUES (%s,%s,%s,%s)",
+            (session['user_id'], reason, "Pending", file_url)
         )
         conn.commit()
 
     cursor.execute("""
-        SELECT leaves.id, employees.name AS name, leaves.reason, leaves.status 
+        SELECT leaves.id, employees.name AS name, leaves.reason, leaves.status, leaves.document_url 
         FROM leaves 
         JOIN employees ON leaves.employee_id = employees.id
         WHERE leaves.employee_id = %s
