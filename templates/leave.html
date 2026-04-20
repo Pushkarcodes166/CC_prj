@@ -131,7 +131,7 @@
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody>
+       <tbody>
             {% for leave in leaves %}
             <tr>
                 <td>{{ leave['id'] }}</td>
@@ -146,7 +146,14 @@
                     {% endif %}
                 </td>
                 <td>
-                   <a href="{{ url_for('delete_leave_route', leave_id=leave['id']) }}" onclick="return confirm('Are you sure you want to delete this leave request?')">
+                    {% if leave['status'] == 'Pending' %}
+                        <a href="{{ url_for('approve_leave', leave_id=leave['id']) }}" 
+                           style="background-color: #28a745; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8em; margin-right: 5px;">
+                           Approve
+                        </a>
+                    {% endif %}
+
+                    <a href="{{ url_for('delete_leave_route', leave_id=leave['id']) }}" onclick="return confirm('Are you sure you want to delete this leave request?')">
                         <i class="fas fa-trash-alt delete-icon"></i>
                     </a>
                 </td>

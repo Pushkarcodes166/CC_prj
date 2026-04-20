@@ -343,11 +343,17 @@ def leave():
         )
         conn.commit()
 
+    # cursor.execute("""
+    #     SELECT leaves.id, employees.name AS name, leaves.reason, leaves.status, leaves.document_url 
+    #     FROM leaves 
+    #     JOIN employees ON leaves.employee_id = employees.id
+    # """)
     cursor.execute("""
-        SELECT leaves.id, employees.name AS name, leaves.reason, leaves.status, leaves.document_url 
-        FROM leaves 
-        JOIN employees ON leaves.employee_id = employees.id
-    """)
+    SELECT leaves.id, employees.name AS name, leaves.reason, leaves.status, leaves.document_url 
+    FROM leaves 
+    JOIN employees ON leaves.employee_id = employees.id
+    WHERE leaves.status = 'Pending'
+""")
     data = cursor.fetchall()
 
     cursor.execute("SELECT * FROM employees")
@@ -393,6 +399,18 @@ def performance():
 @app.route("/test-db")
 def test_db_route():
     return test_db()
+
+@app.route('/approve_leave/<int:leave_id>')
+@login_required
+def approve_leave(leave_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # This updates the row in the DB to 'Approved'
+    cursor.execute("UPDATE leaves SET status='Approved' WHERE id=%s", (leave_id,))
+    conn.commit()
+    conn.close()
+    flash('Leave has been approved!', 'success')
+    return redirect(url_for('leave'))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
