@@ -104,45 +104,49 @@
     </style>
 </head>
 <body>
-    <h1>Shift Scheduling</h1>
-    
-    <form action="{{ url_for('shifts') }}" method="post">
-        <h2>Add Shift</h2>
-        <select name="employee_id" required>
-            <option value="">Select Employee</option>
-            {% for employee in employees %}
-            <option value="{{ employee['id'] }}">{{ employee['name'] }}</option>
-            {% endfor %}
-        </select>
-        <input type="datetime-local" name="shift_time" required>
-        <button type="submit">Add Shift</button>
-    </form>
+   <h1>Shift Scheduling (Admin)</h1>
 
-    <h2>Shift List</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Employee Name</th>
-                <th>Shift Time</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for shift in shifts %}
-            <tr>
-                <td>{{ shift['id'] }}</td>
-                <td>{{ shift['name'] }}</td>
-                <td>{{ shift['shift_time'] }}</td>
-                <td>
-                    <a href="{{ url_for('delete_shift_route', shift_id=shift['id']) }}" onclick="return confirm('Are you sure you want to delete this shift?')">
-                        <i class="fas fa-trash-alt delete-icon"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<form method="POST">
+    <h3>Assign New Shift</h3>
+    <select name="employee_id" required>
+        <option value="">Select Employee</option>
+        {% for emp in employees %}
+            <option value="{{ emp['id'] }}">{{ emp['name'] }}</option>
+        {% endfor %}
+    </select>
+    
+    <input type="date" name="shift_date" required> 
+    
+    <input type="text" name="shift_time" placeholder="e.g., 9:00 AM - 5:00 PM" required>
+    <button type="submit">Assign Shift</button>
+</form>
+
+<h2>Complete Shift Log</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Employee Name</th>
+            <th>Date</th> <th>Shift Time</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for shift in shifts %}
+        <tr>
+            <td>{{ shift['id'] }}</td>
+            <td>{{ shift['name'] }}</td>
+            <td>{{ shift['shift_date'] }}</td> <td>{{ shift['shift_time'] }}</td>
+            <td>
+                <a href="{{ url_for('delete_shift_route', shift_id=shift['id']) }}" 
+                   onclick="return confirm('Are you sure you want to delete this shift?')">
+                    <i class="fas fa-trash-alt delete-icon"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
     <a href="{{ url_for('index') }}" class="back-link">Back</a>
 </body>

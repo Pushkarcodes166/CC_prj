@@ -105,28 +105,39 @@
 </head>
 <body>
     <h1>Shift Scheduling</h1>
-    
-    <h2>My Shifts</h2>
 
-    <h2>Shift List</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Employee Name</th>
-                <th>Shift Time</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for shift in shifts %}
-            <tr>
-                <td>{{ shift['id'] }}</td>
-                <td>{{ shift['name'] }}</td>
-                <td>{{ shift['shift_time'] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h3>My Upcoming Schedule</h3>
+<p>Showing your shifts for today and future dates.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Date</th> <th>Shift Time</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for shift in shifts %}
+        <tr>
+            <td><strong>{{ shift['shift_date'] }}</strong></td> 
+            
+            <td>{{ shift['shift_time'] }}</td>
+            
+            <td>
+                {% if shift['shift_date'] == today_date %}
+                    <span style="color: blue; font-weight: bold;">Today's Shift</span>
+                {% else %}
+                    <span style="color: green;">Upcoming</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if not shifts %}
+    <p>No upcoming shifts scheduled. Please contact HR if this is an error.</p>
+{% endif %}
 
     <a href="{{ url_for('index') }}" class="back-link">Back</a>
 </body>

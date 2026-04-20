@@ -86,20 +86,26 @@ def tasks():
     if request.method == 'POST':
         task_id = request.form['task_id']
         status = request.form['status']
+        # Requirement 3: Captures the exact time the status changed
         cursor.execute(
-            "UPDATE tasks SET status=%s WHERE id=%s AND employee_id=%s",
-            (status, task_id, session['user_id'])
+            "UPDATE tasks SET status=%s, updated_at=NOW() WHERE id=%s", 
+            (status, task_id)
         )
         conn.commit()
 
+    # --- CHANGES MADE HERE ---
+    # Added: AND tasks.due_date >= CURDATE()
+    # This filters out any tasks from yesterday or earlier
     cursor.execute("""
-        SELECT tasks.id, employees.name AS name, tasks.task, tasks.status 
+        SELECT tasks.id, employees.name AS name, tasks.task, tasks.status, tasks.due_date 
         FROM tasks 
         JOIN employees ON tasks.employee_id = employees.id
-        WHERE tasks.employee_id = %s
+        WHERE tasks.employee_id = %s AND tasks.due_date >= CURDATE()
+        ORDER BY tasks.due_date ASC
     """, (session['user_id'],))
     data = cursor.fetchall()
     
+    conn.close()
     return render_template('tasks.html', tasks=data, employees=[])
 
 # ---------- ATTENDANCE ----------
@@ -161,13 +167,20 @@ def shifts():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # --- CHANGES MADE HERE ---
+    # 1. Added 'shifts.shift_date' to the SELECT so it can be displayed
+    # 2. Added 'AND shifts.shift_date >= CURDATE()' to filter out the past
+    # 3. Added 'ORDER BY' to show the most recent shift first
     cursor.execute("""
-        SELECT shifts.id, employees.name AS name, shifts.shift_time 
+        SELECT shifts.id, employees.name AS name, shifts.shift_time, shifts.shift_date 
         FROM shifts 
         JOIN employees ON shifts.employee_id = employees.id
-        WHERE shifts.employee_id = %s
+        WHERE shifts.employee_id = %s AND shifts.shift_date >= CURDATE()
+        ORDER BY shifts.shift_date ASC
     """, (session['user_id'],))
+    
     data = cursor.fetchall()
+    conn.close()
 
     return render_template('shifts.html', shifts=data, employees=[])
 

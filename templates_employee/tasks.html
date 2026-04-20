@@ -104,39 +104,40 @@
     </style>
 </head>
 <body>
-    <h1>Task Assignment</h1>
-    
-    <form action="{{ url_for('tasks') }}" method="post">
-        <h2>Update Task Status</h2>
-        <input type="number" name="task_id" placeholder="Task ID (from table below)" required>
-        <select name="status" required>
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-        </select>
-        <button type="submit">Update Task</button>
-    </form>
+   <h1>My Tasks</h1>
 
-    <h2>Task List</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Employee Name</th>
-                <th>Task</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-            <tr>
-                <td>{{ task['id'] }}</td>
-                <td>{{ task['name'] }}</td>
-                <td>{{ task['task'] }}</td>
-                <td>{{ task['status'] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h2>Active Task List</h2>
+<p>Showing tasks for today and upcoming deadlines.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Task Name</th>
+            <th>Due Date</th> <th>Current Status</th>
+            <th>Update Progress</th> </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task['task'] }}</td>
+            <td>{{ task['due_date'] }}</td> <td>
+                <span class="status-{{ task['status'].lower() }}">
+                    {{ task['status'] }}
+                </span>
+            </td>
+            <td>
+                <form action="{{ url_for('tasks') }}" method="post" style="display:inline;">
+                    <input type="hidden" name="task_id" value="{{ task['id'] }}">
+                    <select name="status" onchange="this.form.submit()">
+                        <option value="Pending" {% if task['status'] == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Completed" {% if task['status'] == 'Completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
     <a href="{{ url_for('index') }}" class="back-link">Back</a>
 </body>

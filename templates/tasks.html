@@ -104,51 +104,57 @@
     </style>
 </head>
 <body>
-    <h1>Task Assignment</h1>
+    <h1>Task Management (Admin)</h1>
     
-    <form action="{{ url_for('tasks') }}" method="post">
-        <h2>Add Task</h2>
-        <select name="employee_id" required>
-            <option value="">Select Employee</option>
-            {% for employee in employees %}
-            <option value="{{ employee['id'] }}">{{ employee['name'] }}</option>
-            {% endfor %}
-        </select>
-        <input type="text" name="task" placeholder="Task description" required>
-        <select name="status" required>
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-        </select>
-        <button type="submit">Add Task</button>
-    </form>
+<form action="{{ url_for('tasks') }}" method="post">
+    <h2>Assign New Task</h2>
+    <select name="employee_id" required>
+        <option value="">Select Employee</option>
+        {% for employee in employees %}
+        <option value="{{ employee['id'] }}">{{ employee['name'] }}</option>
+        {% endfor %}
+    </select>
+    <input type="text" name="task" placeholder="Task description" required>
+    
+    <input type="date" name="due_date" required title="Set Task Deadline">
+    
+    <select name="status" required>
+        <option value="Pending">Pending</option>
+        <option value="Completed">Completed</option>
+    </select>
+    <button type="submit">Assign Task</button>
+</form>
 
-    <h2>Task List</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Employee Name</th>
-                <th>Task</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-            <tr>
-                <td>{{ task['id'] }}</td>
-                <td>{{ task['name'] }}</td>
-                <td>{{ task['task'] }}</td>
-                <td>{{ task['status'] }}</td>
-                <td>
-                    <a href="{{ url_for('delete_task_route', task_id=task['id']) }}" onclick="return confirm('Are you sure you want to delete this task?')">
-                        <i class="fas fa-trash-alt delete-icon"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h2>Full Task Audit Log</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Employee Name</th>
+            <th>Task</th>
+            <th>Due Date</th> <th>Status</th>
+            <th>Finished At</th> <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task['id'] }}</td>
+            <td>{{ task['name'] }}</td>
+            <td>{{ task['task'] }}</td>
+            <td>{{ task['due_date'] }}</td> <td>{{ task['status'] }}</td>
+            <td>
+                {{ task['updated_at'] if task['updated_at'] else '---' }}
+            </td>
+            <td>
+                <a href="{{ url_for('delete_task_route', task_id=task['id']) }}" onclick="return confirm('Are you sure you want to delete this task?')">
+                    <i class="fas fa-trash-alt delete-icon"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
     <a href="{{ url_for('index') }}" class="back-link">Back</a>
 </body>

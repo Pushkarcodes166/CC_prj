@@ -216,9 +216,10 @@ def tasks():
         conn.commit()
 
     cursor.execute("""
-        SELECT tasks.id, employees.name AS name, tasks.task, tasks.status 
+       SELECT tasks.id, employees.name AS name, tasks.task, tasks.status, tasks.due_date 
         FROM tasks 
         JOIN employees ON tasks.employee_id = employees.id
+        ORDER BY tasks.due_date DESC
     """)
     data = cursor.fetchall()
 
@@ -267,7 +268,7 @@ def attendance():
 
 # ---------- SHIFTS ----------
 @app.route('/shifts', methods=['GET', 'POST'])
-@login_required
+@login_required # Use your admin-specific decorator if you have one
 def shifts():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -275,23 +276,30 @@ def shifts():
     if request.method == 'POST':
         employee_id = request.form['employee_id']
         shift_time = request.form['shift_time']
+        shift_date = request.form['shift_date'] # Ensure your form has a date input
 
+        # HR can insert shifts for any date (past or future)
         cursor.execute(
-            "INSERT INTO shifts (employee_id, shift_time) VALUES (%s,%s)",
-            (employee_id, shift_time)
+            "INSERT INTO shifts (employee_id, shift_time, shift_date) VALUES (%s,%s,%s)",
+            (employee_id, shift_time, shift_date)
         )
         conn.commit()
 
+    # --- ADMIN VIEW: NO FILTER ---
+    # We show EVERYTHING so HR can see past assignments and future schedules
     cursor.execute("""
-        SELECT shifts.id, employees.name AS name, shifts.shift_time 
+        SELECT shifts.id, employees.name AS name, shifts.shift_time, shifts.shift_date 
         FROM shifts 
         JOIN employees ON shifts.employee_id = employees.id
+        ORDER BY shifts.shift_date DESC
     """)
     data = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM employees")
+    # Need this to populate the "Assign to" dropdown menu
+    cursor.execute("SELECT id, name FROM employees")
     employees_data = cursor.fetchall()
 
+    conn.close()
     return render_template('shifts.html', shifts=data, employees=employees_data)
 
 @app.route('/delete_shift/<int:shift_id>')
