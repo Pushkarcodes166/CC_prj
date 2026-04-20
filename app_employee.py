@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from datetime import date, datetime
 import mysql.connector
 import os
 import boto3
@@ -102,6 +103,7 @@ def tasks():
     return render_template('tasks.html', tasks=data, employees=[])
 
 # ---------- ATTENDANCE ----------
+# ---------- ATTENDANCE (UPDATED) ----------
 @app.route('/attendance', methods=['GET', 'POST'])
 @login_required
 def attendance():
@@ -109,20 +111,41 @@ def attendance():
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'POST':
-        date = request.form['date']
-        status = request.form['status']
+        # 1. FORCE TODAY'S DATE (Requirement #2)
+        # We ignore 'request.form' for the date and use the server's clock
+        today_date = date.today()
+        status = request.form.get('status', 'Present')
 
+        # 2. DUPLICATE CHECK (Requirement #1)
+        # Check if this employee already has a record for today
         cursor.execute(
-            "INSERT INTO attendance (employee_id, date, status) VALUES (%s,%s,%s)",
-            (session['user_id'], date, status)
+            "SELECT id FROM attendance WHERE employee_id = %s AND date = %s", 
+            (session['user_id'], today_date)
         )
-        conn.commit()
+        already_marked = cursor.fetchone()
 
+        if already_marked:
+            flash('Error: You have already marked attendance for today!', 'error')
+        else:
+            # 3. INSERT RECORD
+            # The 'submitted_at' timestamp column in RDS will fill itself automatically
+            try:
+                cursor.execute(
+                    "INSERT INTO attendance (employee_id, date, status) VALUES (%s, %s, %s)",
+                    (session['user_id'], today_date, status)
+                )
+                conn.commit()
+                flash('Attendance marked successfully!', 'success')
+            except Exception as e:
+                flash(f'Database Error: {str(e)}', 'error')
+
+    # This part shows the history table to the employee
     cursor.execute("""
         SELECT attendance.id, employees.name AS name, attendance.date, attendance.status
         FROM attendance
         JOIN employees ON attendance.employee_id = employees.id
         WHERE attendance.employee_id = %s
+        ORDER BY attendance.date DESC
     """, (session['user_id'],))
     attendance_records = cursor.fetchall()
 
@@ -131,7 +154,6 @@ def attendance():
         attendance_records=attendance_records,
         employees=[{'id': session['user_id'], 'name': session.get('user_name', 'You')}]
     )
-
 # ---------- SHIFTS ----------
 @app.route('/shifts', methods=['GET'])
 @login_required
