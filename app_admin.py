@@ -237,56 +237,33 @@ def delete_task_route(task_id):
     return redirect(url_for('tasks'))
 
 # ---------- ATTENDANCE ----------
-@app.route('/attendance', methods=['GET', 'POST'])
+# ---------- HR VIEW ONLY (Master Node) ----------
+@app.route('/attendance')
 @login_required
 def attendance():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    if request.method == 'POST':
-        employee_id = request.form['employee_id']
-        date = request.form['date']
-        status = request.form['status']
-
-        cursor.execute(
-            "INSERT INTO attendance (employee_id, date, status) VALUES (%s,%s,%s)",
-            (employee_id, date, status)
-        )
-        conn.commit()
-
-    # ✅ JOIN to get employee name
+    # We only need to SELECT data, no INSERT or DELETE here
+    # This pulls everyone's records for HR to monitor
     cursor.execute("""
-        SELECT attendance.id, employees.name AS name, attendance.date, attendance.status
+        SELECT 
+            attendance.id, 
+            employees.name AS name, 
+            attendance.date, 
+            attendance.submitted_at, 
+            attendance.status
         FROM attendance
         JOIN employees ON attendance.employee_id = employees.id
+        ORDER BY attendance.date DESC, attendance.submitted_at DESC
     """)
     attendance_records = cursor.fetchall()
-
-    # ✅ employees for dropdown
-    cursor.execute("SELECT * FROM employees")
-    employees = cursor.fetchall()
+    conn.close()
 
     return render_template(
-        'attendance.html',
-        attendance_records=attendance_records,
-        employees=employees
+        'attendance.html', 
+        attendance_records=attendance_records
     )
-
-@app.route('/delete_attendance/<int:id>')
-@login_required
-def delete_attendance(id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM attendance WHERE id=%s", (id,))
-    conn.commit()
-    return redirect(url_for('attendance'))
-
-def test_db():
-    try:
-        conn = get_db_connection()
-        return "Database connected successfully!"
-    except Exception as e:
-        return str(e)
 
 # ---------- SHIFTS ----------
 @app.route('/shifts', methods=['GET', 'POST'])

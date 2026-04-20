@@ -107,49 +107,33 @@
 <body>
     <h1>Attendance Tracking</h1>
     
-    <form action="{{ url_for('attendance') }}" method="post">
-        <h2>Add Attendance</h2>
-        <select name="employee_id" required>
-            <option value="">Select Employee</option>
-            {% for employee in employees %}
-            <option value="{{ employee['id'] }}">{{ employee['name'] }}</option>
-            {% endfor %}
-        </select>
-        <input type="date" name="date" required>
-        <select name="status" required>
-            <option value="Present">Present</option>
-            <option value="Absent">Absent</option>
-        </select>
-        <button type="submit">Add Attendance</button>
-    </form>
+   
 
-    <h2>Attendance Records</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Employee Name</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for record in attendance_records %}
-            <tr>
-                <td>{{ record['id'] }}</td>
-                <td>{{ record['name'] }}</td>
-                <td>{{ record['date'] }}</td>
-                <td>{{ record['status'] }}</td>
-                <td>
-                   <a href="{{ url_for('delete_attendance', id=record['id']) }}" onclick="return confirm('Are you sure you want to delete this attendance record?')">
-                        <i class="fas fa-trash-alt delete-icon"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+   <h2>All Employee Attendance Records</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Employee Name</th>
+            <th>Date</th>
+            <th>Clock-in Time</th> <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in attendance_records %}
+        <tr>
+            <td>{{ loop.index }}</td> <td>{{ record['name'] }}</td>
+            <td>{{ record['date'] }}</td>
+            <td>{{ record['submitted_at'] if record['submitted_at'] else 'N/A' }}</td>
+            <td>
+                <span style="color: {{ 'green' if record['status'] == 'Present' else 'red' }}">
+                    {{ record['status'] }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
     <a href="{{ url_for('index') }}" class="back-link">Back</a>
 </body>

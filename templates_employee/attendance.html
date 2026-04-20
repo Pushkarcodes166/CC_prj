@@ -105,18 +105,7 @@
     </style>
 </head>
 <body>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div style="padding: 10px; margin-bottom: 20px; border-radius: 4px; 
-                      background-color: {{ '#f8d7da' if category == 'error' else '#d4edda' }}; 
-                      color: {{ '#721c24' if category == 'error' else '#155724' }}; 
-                      width: 100%; max-width: 500px; text-align: center;">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    
     <h1>Attendance Tracking</h1>
     
    <form action="{{ url_for('attendance') }}" method="post">
