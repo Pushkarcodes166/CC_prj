@@ -105,16 +105,29 @@
     </style>
 </head>
 <body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div style="padding: 10px; margin-bottom: 20px; border-radius: 4px; 
+                      background-color: {{ '#f8d7da' if category == 'error' else '#d4edda' }}; 
+                      color: {{ '#721c24' if category == 'error' else '#155724' }}; 
+                      width: 100%; max-width: 500px; text-align: center;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
     <h1>Attendance Tracking</h1>
     
-    <form action="{{ url_for('attendance') }}" method="post">
-        <h2>Mark My Attendance</h2>
-        <input type="date" name="date" required>
-        <select name="status" required>
-            <option value="Present">Present</option>
-            <option value="Absent">Absent</option>
-        </select>
-        <button type="submit">Add Attendance</button>
+   <form action="{{ url_for('attendance') }}" method="post">
+        <h2>Mark Today's Attendance</h2>
+        <p style="text-align: center; color: #666;">
+            Click the button below to mark your presence for <strong>today</strong>.
+        </p>
+        
+        <input type="hidden" name="status" value="Present">
+        
+        <button type="submit" style="width: 100%;">Mark as Present</button>
     </form>
 
     <h2>Attendance Records</h2>
@@ -124,7 +137,7 @@
                 <th>ID</th>
                 <th>Employee Name</th>
                 <th>Date</th>
-                <th>Status</th>
+                <th>Clock-in Time</th> <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -133,6 +146,7 @@
                 <td>{{ record['id'] }}</td>
                 <td>{{ record['name'] }}</td>
                 <td>{{ record['date'] }}</td>
+                <td>{{ record['submitted_at'] if record['submitted_at'] else 'N/A' }}</td>
                 <td>{{ record['status'] }}</td>
             </tr>
             {% endfor %}
