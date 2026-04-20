@@ -100,7 +100,8 @@ def tasks():
         SELECT tasks.id, employees.name AS name, tasks.task, tasks.status, tasks.due_date 
         FROM tasks 
         JOIN employees ON tasks.employee_id = employees.id
-        WHERE tasks.employee_id = %s AND tasks.due_date >= CURDATE()
+        WHERE tasks.employee_id = %s 
+        AND (tasks.due_date >= CURDATE() OR tasks.due_date IS NULL)
         ORDER BY tasks.due_date ASC
     """, (session['user_id'],))
     data = cursor.fetchall()

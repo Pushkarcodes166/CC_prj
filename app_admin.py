@@ -205,15 +205,19 @@ def tasks():
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'POST':
-        employee_id = request.form['employee_id']
-        task = request.form['task']
-        status = request.form['status']
+        employee_id = request.form.get('employee_id')
+        task_desc = request.form.get('task')
+        status = request.form.get('status')
+        due_date = request.form.get('due_date') # THIS GRABS THE DATE PICKER VALUE
 
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO tasks (employee_id, task, status) VALUES (%s,%s,%s)",
-            (employee_id, task, status)
+            "INSERT INTO tasks (employee_id, task, status, due_date) VALUES (%s, %s, %s, %s)",
+            (employee_id, task_desc, status, due_date)
         )
         conn.commit()
+        conn.close()
 
     cursor.execute("""
        SELECT tasks.id, employees.name AS name, tasks.task, tasks.status, tasks.due_date 
