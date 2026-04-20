@@ -198,6 +198,7 @@ def delete_employee(id):
     return redirect(url_for('employees'))
 
 # ---------- TASKS ----------
+# ---------- TASKS (MASTER NODE) ----------
 @app.route('/tasks', methods=['GET', 'POST'])
 @login_required
 def tasks():
@@ -208,37 +209,49 @@ def tasks():
         employee_id = request.form.get('employee_id')
         task_desc = request.form.get('task')
         status = request.form.get('status')
-        due_date = request.form.get('due_date') # THIS GRABS THE DATE PICKER VALUE
+        due_date = request.form.get('due_date')
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        # One single insert, one single commit
         cursor.execute(
             "INSERT INTO tasks (employee_id, task, status, due_date) VALUES (%s, %s, %s, %s)",
             (employee_id, task_desc, status, due_date)
         )
         conn.commit()
-        conn.close()
+        # We don't close here yet because we need to fetch data for the table below
 
+    # Fetch updated task list (including the one we just added)
     cursor.execute("""
-       SELECT tasks.id, employees.name AS name, tasks.task, tasks.status, tasks.due_date 
+        SELECT tasks.id, employees.name AS name, tasks.task, tasks.status, tasks.due_date, tasks.updated_at 
         FROM tasks 
         JOIN employees ON tasks.employee_id = employees.id
-        ORDER BY tasks.due_date DESC
+        ORDER BY tasks.due_date DESC, tasks.id DESC
     """)
-    data = cursor.fetchall()
+    all_tasks = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM employees")
-    employees_data = cursor.fetchall()
+    # Fetch employees for the dropdown menu
+    cursor.execute("SELECT id, name FROM employees")
+    employees_list = cursor.fetchall()
 
-    return render_template('tasks.html', tasks=data, employees=employees_data)
+    # FINALLY close everything before sending to the browser
+    cursor.close()
+    conn.close()
 
+    return render_template('tasks.html', tasks=all_tasks, employees=employees_list)
+
+# ---------- DELETE TASK ----------
 @app.route('/delete_task/<int:task_id>')
 @login_required
 def delete_task_route(task_id):
     conn = get_db_connection()
     cursor = conn.cursor()
+    
     cursor.execute("DELETE FROM tasks WHERE id=%s", (task_id,))
     conn.commit()
+    
+    cursor.close()
+    conn.close()
+    
+    flash('Task deleted successfully', 'success')
     return redirect(url_for('tasks'))
 
 # ---------- ATTENDANCE ----------
