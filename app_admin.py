@@ -9,11 +9,19 @@ import boto3
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# MySQL Config (RDS via env vars, fallback to LOCAL)
+# # MySQL Config (RDS via env vars, fallback to LOCAL)
+# DB_CONFIG = {
+#     "host": os.environ.get("DB_HOST", "localhost"),
+#     "user": os.environ.get("DB_USER", "admin"),
+#     "password": os.environ.get("DB_PASS", "root"),
+#     "database": "workforce_db" 
+# }
+# ================= CONFIG =================
+# MySQL Config (Updated for AWS RDS)
 DB_CONFIG = {
-    "host": os.environ.get("DB_HOST", "localhost"),
+    "host": os.environ.get("DB_HOST", "wfms-database-v2.cs1ui6eo0uvn.us-east-1.rds.amazonaws.com"),
     "user": os.environ.get("DB_USER", "admin"),
-    "password": os.environ.get("DB_PASS", "root"),
+    "password": os.environ.get("DB_PASS", "root123"), # Use the new password you set in AWS Console
     "database": "workforce_db" 
 }
 
