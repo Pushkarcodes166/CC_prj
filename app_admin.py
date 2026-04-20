@@ -21,7 +21,7 @@ app.secret_key = 'your_secret_key'
 DB_CONFIG = {
     "host": os.environ.get("DB_HOST", "wfms-database-v2.cs1ui6eo0uvn.us-east-1.rds.amazonaws.com"),
     "user": os.environ.get("DB_USER", "admin"),
-    "password": os.environ.get("DB_PASS", "root123"), # Use the new password you set in AWS Console
+    "password": os.environ.get("DB_PASS", "shravani1508"), # Use the new password you set in AWS Console
     "database": "workforce_db" 
 }
 
